@@ -44,14 +44,14 @@
     <div class="topbar-inner">
       <div class="brand">
         <div class="brand-badge">OS</div>
-        <span>OpcodeShield <small style="color:var(--muted);font-weight:500">v4.0</small></span>
+        <span>OpcodeShield <small style="color:var(--muted);font-weight:500">v4.1</small></span>
       </div>
       <nav class="nav-links" aria-label="Primary Navigation">
         <a href="#app" class="hide-sm">Scanner</a>
         <a href="#downloads" class="hide-sm">Downloads</a>
         <a href="https://github.com/FlaxyDitto-dev/OpcodeShield" target="_blank" rel="noopener">GitHub</a>
         <button id="btn-install-pwa" class="btn secondary" style="display:none;padding:5px 10px;font-size:0.78rem">Install PWA</button>
-        <a class="btn" href="https://github.com/FlaxyDitto-dev/OpcodeShield/releases/latest" target="_blank" rel="noopener" style="padding:6px 12px;font-size:0.8rem">v4.0.0</a>
+        <a class="btn" href="https://github.com/FlaxyDitto-dev/OpcodeShield/releases/latest" target="_blank" rel="noopener" style="padding:6px 12px;font-size:0.8rem">v4.1.0</a>
       </nav>
     </div>
   </header>
@@ -84,12 +84,13 @@
         <div class="card">
           <div id="dropzone" class="dropzone">
             <input id="file-input" type="file" />
-            <h2 style="margin-bottom:4px">Drop .exe, .dll, .elf, .so, .dylib, .apk, or .bin</h2>
-            <p style="color:var(--muted);margin:0;font-size:0.86rem">100% client-side WebAssembly. Nothing leaves your device.</p>
+            <h2 style="margin-bottom:4px">Drop ANY file: .exe (incl. PyInstaller), .dll, .elf, .apk, .py, .rs, .js, .ps1, .sh</h2>
+            <p style="color:var(--muted);margin:0;font-size:0.86rem">Finds RATs, stealers &amp; backdoors in binaries, PyInstaller archives, and source code — 100% local in WebAssembly.</p>
             <div class="btn-row">
-              <button type="button" class="btn">Choose File</button>
+              <button type="button" class="btn">Choose Any File</button>
               <button type="button" id="btn-demo-clean" class="btn secondary">Demo: Clean</button>
-              <button type="button" id="btn-demo-malware" class="btn danger">Demo: Keylogger</button>
+              <button type="button" id="btn-demo-malware" class="btn danger">Demo: Keylogger PE</button>
+              <button type="button" id="btn-demo-pyrat" class="btn danger">Demo: Python RAT</button>
             </div>
           </div>
         </div>

