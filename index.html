@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0e1526" />
+  <title>OpcodeShield — Offline AI Binary Malware Scanner, CFG Visualizer &amp; WebAssembly Patcher</title>
+  <meta name="description" content="Scan, visualize Control-Flow Graphs, and surgically disinfect Windows PE (.exe/.dll), Linux ELF, macOS Mach-O, and Android APK binaries directly in your browser using Rust WebAssembly, WebGPU, and OpcodeShield-SecNet-v3 INT8 ONNX AI — 100% offline PWA, zero uploads." />
+  <meta name="keywords" content="OpcodeShield, malware scanner, WebAssembly malware analyzer, binary patcher, CFG visualizer, PE analyzer, ELF scanner, APK analyzer, ONNX WebGPU AI, YARA browser scanner, offline PWA antivirus, reverse engineering" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <meta name="google-site-verification" content="ca6v5Tp2KfTcIOVtxesip3zxP6C1RvD6CWFeF4pZuoM" />
+  <meta name="google-site-verification" content="enYYrqcLqokhL7_Cnu_NGk-g8-5BEMvCCxzpP31w7OY" />
+  <link rel="canonical" href="https://opcodeshield.github.io/" />
+  <link rel="manifest" href="./manifest.json" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="OpcodeShield" />
+  <meta property="og:title" content="OpcodeShield v4 — Offline AI Binary Scanner, CFG Graph &amp; WebAssembly Patcher" />
+  <meta property="og:description" content="100% client-side PWA WebAssembly binary scanner, clickable CFG visualizer, SecNet-v3 WebGPU/ONNX AI, and surgical hex patcher." />
+  <meta property="og:url" content="https://opcodeshield.github.io/" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "OpcodeShield",
+    "alternateName": "GhidraGuard",
+    "applicationCategory": "SecurityApplication",
+    "operatingSystem": "WebAssembly PWA (Browser), Windows, Linux, macOS, Android",
+    "softwareVersion": "4.0.0",
+    "url": "https://opcodeshield.github.io/",
+    "downloadUrl": "https://github.com/FlaxyDitto-dev/OpcodeShield/releases/latest",
+    "codeRepository": "https://github.com/FlaxyDitto-dev/OpcodeShield",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+
+  <link rel="stylesheet" href="./styles.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js"></script>
+  <script defer src="./app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-badge">OS</div>
+        <span>OpcodeShield <small style="color:var(--muted);font-weight:500">v4.0</small></span>
+      </div>
+      <nav class="nav-links" aria-label="Primary Navigation">
+        <a href="#app" class="hide-sm">Scanner</a>
+        <a href="#downloads" class="hide-sm">Downloads</a>
+        <a href="https://github.com/FlaxyDitto-dev/OpcodeShield" target="_blank" rel="noopener">GitHub</a>
+        <button id="btn-install-pwa" class="btn secondary" style="display:none;padding:5px 10px;font-size:0.78rem">Install PWA</button>
+        <a class="btn" href="https://github.com/FlaxyDitto-dev/OpcodeShield/releases/latest" target="_blank" rel="noopener" style="padding:6px 12px;font-size:0.8rem">v4.0.0</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <span class="pill">Offline PWA • Rust WebAssembly • WebGPU / ONNX SecNet-v3 • Zero Uploads</span>
+      <h1>Offline AI Binary Scanner, CFG Graph &amp; Surgical Patcher</h1>
+      <p class="lead">
+        Analyze and disinfect <strong>PE, ELF, Mach-O &amp; APK</strong> binaries directly in your browser on mobile or desktop — powered by our unified <strong>Rust WASM</strong> core and <strong>OpcodeShield-SecNet-v3</strong> multi-label AI.
+      </p>
+      <div class="status-bar">
+        <div class="status-chip"><span id="wasm-dot" class="dot"></span><span id="wasm-status">Init Rust WASM...</span></div>
+        <div class="status-chip"><span id="ai-dot" class="dot"></span><span id="ai-status">Init SecNet-v3...</span></div>
+        <div class="status-chip"><span class="dot ok"></span><span>100% Local Offline</span></div>
+      </div>
+    </section>
+
+    <section id="app">
+      <div class="tabs" role="tablist">
+        <button class="tab-btn active" data-tab="tab-scanner" role="tab">1. Scanner &amp; AI</button>
+        <button class="tab-btn" data-tab="tab-details" role="tab">2. Sections &amp; YARA</button>
+        <button class="tab-btn" data-tab="tab-cfg" role="tab">3. Call-Graph / CFG</button>
+        <button class="tab-btn" data-tab="tab-patcher" role="tab">4. Surgical Patcher</button>
+        <button class="tab-btn" data-tab="tab-auditor" role="tab">5. AI Code Auditor</button>
+      </div>
+
+      <!-- TAB 1 -->
+      <div id="tab-scanner" class="tab-panel active">
+        <div class="card">
+          <div id="dropzone" class="dropzone">
+            <input id="file-input" type="file" />
+            <h2 style="margin-bottom:4px">Drop .exe, .dll, .elf, .so, .dylib, .apk, or .bin</h2>
+            <p style="color:var(--muted);margin:0;font-size:0.86rem">100% client-side WebAssembly. Nothing leaves your device.</p>
+            <div class="btn-row">
+              <button type="button" class="btn">Choose File</button>
+              <button type="button" id="btn-demo-clean" class="btn secondary">Demo: Clean</button>
+              <button type="button" id="btn-demo-malware" class="btn danger">Demo: Keylogger</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="results-container" style="display:none">
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+              <div>
+                <h2 id="res-filename" style="margin-bottom:3px">—</h2>
+                <div id="res-meta" style="color:var(--muted);font-size:0.84rem">—</div>
+                <div style="margin-top:4px;font-size:0.78rem;color:var(--muted)">SHA-256: <span id="res-sha256" class="mono"></span></div>
+              </div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <button id="btn-export-html" class="btn secondary" disabled>Export HTML</button>
+                <button id="btn-export-sarif" class="btn secondary" disabled>Export SARIF</button>
+                <button id="btn-download-patched" class="btn ok" disabled>Download Binary</button>
+              </div>
+            </div>
+
+            <div class="grid-2" style="margin-top:12px">
+              <div class="metric-box">
+                <div class="metric-label">Rust Core Static + YARA Score</div>
+                <div id="res-score" class="metric-val">—</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-label">OpcodeShield-SecNet-v3 AI Verdict</div>
+                <div id="res-ai-verdict" class="metric-val">—</div>
+                <div id="res-ai-strategy" style="font-size:0.78rem;color:var(--muted);margin-top:3px">—</div>
+                <div id="res-behaviors" style="margin-top:6px"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-3">
+            <div class="card"><h3>Threat Indicators</h3><div id="res-indicators" style="font-size:0.84rem"></div></div>
+            <div class="card"><h3>Suspicious APIs</h3><div id="res-apis"></div></div>
+            <div class="card"><h3>Extracted IOCs &amp; URLs</h3><div id="res-iocs" style="font-size:0.82rem"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2 -->
+      <div id="tab-details" class="tab-panel">
+        <div class="card">
+          <h3>YARA Signature Matches</h3>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Rule</th><th>Severity</th><th>Offset</th><th>Description</th></tr></thead>
+            <tbody id="res-yara"><tr><td colspan="4" style="color:var(--muted)">Scan a binary first.</td></tr></tbody>
+          </table></div>
+        </div>
+        <div class="card">
+          <h3>Sections &amp; Shannon Entropy</h3>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Section</th><th>VA</th><th>Offset</th><th>Size</th><th>Entropy</th><th>Flags</th></tr></thead>
+            <tbody id="res-sections"><tr><td colspan="6" style="color:var(--muted)">Scan a binary first.</td></tr></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- TAB 3: CFG -->
+      <div id="tab-cfg" class="tab-panel">
+        <div class="card">
+          <h3>Interactive Function Call-Graph &amp; Control-Flow Visualizer</h3>
+          <p style="color:var(--muted);font-size:0.84rem;margin-top:0">Red nodes indicate YARA/RWX/AI-flagged malicious blocks. <strong>Click any node</strong> to load its file offset directly into the Surgical Patcher.</p>
+          <div id="cfg-svg-host" class="cfg-canvas"><div style="padding:18px;color:var(--muted)">Scan a binary to render its CFG &amp; Call Graph.</div></div>
+        </div>
+      </div>
+
+      <!-- TAB 4: PATCHER -->
+      <div id="tab-patcher" class="tab-panel">
+        <div class="card">
+          <h3>Automatic Recommended Disinfection Targets</h3>
+          <div id="cfg-selected-note" style="color:var(--accent);font-size:0.82rem;margin-bottom:8px"></div>
+          <div id="patch-candidates" style="color:var(--muted);font-size:0.86rem">Scan a binary first.</div>
+        </div>
+        <div class="card">
+          <h3>Manual Surgical Offset Patcher (WASM Memory)</h3>
+          <div class="grid-3">
+            <div><label for="manual-offset" class="metric-label">File Offset</label><input id="manual-offset" type="text" value="0x90" /></div>
+            <div>
+              <label for="manual-strategy" class="metric-label">Strategy</label>
+              <select id="manual-strategy">
+                <option value="0">RET_ZERO (31 C0 C3)</option>
+                <option value="1">RET_ONE (B8 01 00 00 00 C3)</option>
+                <option value="2">RET_EARLY (C3)</option>
+                <option value="3">NOP_SLED (90 ...)</option>
+              </select>
+            </div>
+            <div><label for="manual-len" class="metric-label">NOP Bytes</label><input id="manual-len" type="number" value="8" min="1" max="64" /></div>
+          </div>
+          <div style="margin-top:10px"><button id="btn-apply-manual-patch" class="btn">Apply Patch in WASM</button></div>
+          <h4 style="margin:14px 0 6px;font-size:0.86rem">Byte Diff &amp; SHA-256 Log</h4>
+          <div id="patch-diff-log" class="hex-diff">No patches applied yet.</div>
+        </div>
+      </div>
+
+      <!-- TAB 5: AI AUDITOR -->
+      <div id="tab-auditor" class="tab-panel">
+        <div class="card">
+          <h3>OpcodeShield-SecNet-v3 Pseudo-C &amp; Disassembly Auditor</h3>
+          <textarea id="code-input" rows="6">FUNC inject_remote_thread
+HHOOK h = SetWindowsHookExA(13, hook_proc, NULL, 0);
+LPVOID mem = VirtualAllocEx(hProc, NULL, 4096, 0x3000, 0x40);
+WriteProcessMemory(hProc, mem, shellcode, 256, NULL);
+CreateRemoteThread(hProc, NULL, 0, mem, NULL, 0, NULL);</textarea>
+          <div style="margin-top:10px"><button id="btn-audit-code" class="btn">Audit with SecNet-v3</button></div>
+          <pre id="code-audit-out" class="hex-diff" style="margin-top:10px">Click "Audit with SecNet-v3" to run local multi-label neural inference.</pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="downloads" style="margin-top:24px">
+      <h2 style="font-size:1.15rem">Native Desktop, Mobile &amp; Cloud Editions</h2>
+      <div class="grid-3">
+        <div class="card">
+          <h3>Windows (.msi + Context Menu)</h3>
+          <p style="color:var(--muted);font-size:0.84rem">Prebuilt Python 3.13, preinstalled SecNet-v3, native Rust DLL, Unicorn CPU emulator &amp; Explorer right-click menu.</p>
+          <a class="btn" href="https://github.com/FlaxyDitto-dev/OpcodeShield/releases/latest" target="_blank" rel="noopener">Download .msi</a>
+        </div>
+        <div class="card">
+          <h3>Linux &amp; macOS</h3>
+          <p style="color:var(--muted);font-size:0.84rem">Portable x86_64 ELF binaries for Linux &amp; universal Apple Silicon/Intel bundle for macOS.</p>
+          <a class="btn secondary" href="https://github.com/FlaxyDitto-dev/OpcodeShield/releases/latest" target="_blank" rel="noopener">All Releases</a>
+        </div>
+        <div class="card">
+          <h3>Android &amp; Google Colab</h3>
+          <p style="color:var(--muted);font-size:0.84rem">Native Android APK scanner/patcher &amp; cloud GPU Colab notebook.</p>
+          <a class="btn secondary" href="https://github.com/FlaxyDitto-dev/OpcodeShield" target="_blank" rel="noopener">GitHub Repo</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <strong>OpcodeShield v4.0.0</strong> — Offline AI Binary Security Suite •
+      <a href="https://github.com/FlaxyDitto-dev/OpcodeShield">GitHub</a> •
+      <a href="./sitemap.xml">Sitemap</a>
+    </div>
+  </footer>
+</body>
+</html>
