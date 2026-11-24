@@ -475,7 +475,7 @@ function setupUI() {
 // =========================================================================
 // Optional Google Sign-In & Role-Based Access Control (Owner-only Traffic)
 // =========================================================================
-const GOOGLE_OAUTH_CLIENT_ID = localStorage.getItem("opcodeshield_google_client_id") || "";
+const GOOGLE_OAUTH_CLIENT_ID = "623197540254-g1044vov9ji4gi8qt2ms4q52fs5l9786.apps.googleusercontent.com";
 const ROLE_REGISTRY = {
   "flaxyditto@gmail.com": "owner",
 };
