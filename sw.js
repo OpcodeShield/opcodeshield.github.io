@@ -1,5 +1,5 @@
 // OpcodeShield v4.0.0 Offline PWA Service Worker
-const CACHE_NAME = "opcodeshield-wasm-v4.1.0";
+const CACHE_NAME = "opcodeshield-wasm-v4.1.1";
 const ASSETS = [
   "./",
   "./index.html",

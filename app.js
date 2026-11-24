@@ -472,8 +472,157 @@ function setupUI() {
   }
 }
 
+// =========================================================================
+// Optional Google Sign-In & Role-Based Access Control (Owner-only Traffic)
+// =========================================================================
+const GOOGLE_OAUTH_CLIENT_ID = localStorage.getItem("opcodeshield_google_client_id") || "";
+const ROLE_REGISTRY = {
+  "flaxyditto@gmail.com": "owner",
+};
+
+function decodeJwtPayload(token) {
+  try {
+    const b64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    return JSON.parse(decodeURIComponent(atob(b64).split("").map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)).join("")));
+  } catch (_) {
+    return null;
+  }
+}
+
+function getUserRole(email, emailVerified) {
+  if (!email || !emailVerified) return "guest";
+  return ROLE_REGISTRY[email.trim().toLowerCase()] || "user";
+}
+
+async function loadOwnerTrafficStats() {
+  const tbody = $("owner-downloads-table");
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="4" style="color:var(--muted)">Fetching live GitHub traffic &amp; downloads...</td></tr>`;
+  try {
+    const [repoResp, relResp] = await Promise.all([
+      fetch("https://api.github.com/repos/FlaxyDitto-dev/OpcodeShield"),
+      fetch("https://api.github.com/repos/FlaxyDitto-dev/OpcodeShield/releases?per_page=10"),
+    ]);
+    const repo = repoResp.ok ? await repoResp.json() : {};
+    const releases = relResp.ok ? await relResp.json() : [];
+
+    let totalDownloads = 0;
+    let latestDownloads = 0;
+    const rows = [];
+    releases.forEach((rel, idx) => {
+      (rel.assets || []).forEach((a) => {
+        const dl = Number(a.download_count || 0);
+        totalDownloads += dl;
+        if (idx === 0) latestDownloads += dl;
+        rows.push(`<tr><td class="mono">${escapeHtml(rel.tag_name)}</td><td class="mono">${escapeHtml(a.name)}</td><td><strong>${dl}</strong></td><td>${(a.size / 1048576).toFixed(1)} MB</td></tr>`);
+      });
+    });
+
+    $("stat-total-downloads").textContent = totalDownloads.toLocaleString();
+    $("stat-stars-forks").textContent = `${repo.stargazers_count ?? 0} ★ / ${repo.forks_count ?? 0} ⑂`;
+    $("stat-latest-downloads").textContent = latestDownloads.toLocaleString();
+    tbody.innerHTML = rows.length ? rows.join("") : `<tr><td colspan="4" style="color:var(--muted)">No release assets found.</td></tr>`;
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="4" class="sev-HIGH">Failed to load stats: ${escapeHtml(err.message)}</td></tr>`;
+  }
+}
+
+function applyAuthState(user) {
+  const loginBtn = $("btn-google-login");
+  const logoutBtn = $("btn-google-logout");
+  const pill = $("auth-user-pill");
+  const ownerTabBtn = $("tab-btn-owner-traffic");
+  const ownerTabPanel = $("tab-owner-traffic");
+
+  if (!user) {
+    if (loginBtn) loginBtn.style.display = "inline-flex";
+    if (logoutBtn) logoutBtn.style.display = "none";
+    if (pill) pill.style.display = "none";
+    if (ownerTabBtn) ownerTabBtn.style.display = "none";
+    if (ownerTabPanel && ownerTabPanel.classList.contains("active")) {
+      ownerTabPanel.classList.remove("active");
+      document.querySelector('[data-tab="tab-scanner"]')?.click();
+    }
+    return;
+  }
+
+  const role = getUserRole(user.email, user.email_verified);
+  if (loginBtn) loginBtn.style.display = "none";
+  if (logoutBtn) logoutBtn.style.display = "inline-flex";
+  if (pill) {
+    pill.style.display = "inline-flex";
+    pill.innerHTML = role === "owner"
+      ? `<span class="dot ok"></span><strong style="color:#fbbf24">OWNER</strong>&nbsp;${escapeHtml(user.email)}`
+      : `<span class="dot ok"></span>${escapeHtml(user.name || user.email)}`;
+  }
+
+  // Strictly show Owner Traffic tab ONLY when signed in as flaxyditto@gmail.com (role === "owner")
+  if (role === "owner") {
+    if (ownerTabBtn) ownerTabBtn.style.display = "inline-flex";
+    if ($("owner-identity")) $("owner-identity").textContent = `Signed in as ${user.email} (Role: OWNER)`;
+    loadOwnerTrafficStats();
+  } else {
+    if (ownerTabBtn) ownerTabBtn.style.display = "none";
+  }
+}
+
+function initGoogleAuth() {
+  const saved = sessionStorage.getItem("opcodeshield_auth_user");
+  if (saved) {
+    try { applyAuthState(JSON.parse(saved)); } catch (_) {}
+  }
+
+  const logoutBtn = $("btn-google-logout");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+      sessionStorage.removeItem("opcodeshield_auth_user");
+      if (window.google?.accounts?.id) window.google.accounts.id.disableAutoSelect();
+      applyAuthState(null);
+    });
+  }
+
+  const refreshBtn = $("btn-refresh-traffic");
+  if (refreshBtn) refreshBtn.addEventListener("click", loadOwnerTrafficStats);
+
+  const loginBtn = $("btn-google-login");
+  if (loginBtn) {
+    loginBtn.addEventListener("click", () => {
+      let cid = GOOGLE_OAUTH_CLIENT_ID || localStorage.getItem("opcodeshield_google_client_id") || "";
+      if (!cid) {
+        cid = prompt(
+          "Google Sign-In Setup (Owner):\nPaste your Google OAuth 2.0 Web Client ID (ending in .apps.googleusercontent.com)\nauthorized for https://opcodeshield.github.io:"
+        );
+        if (!cid || !cid.trim()) return;
+        cid = cid.trim();
+        localStorage.setItem("opcodeshield_google_client_id", cid);
+      }
+      if (!window.google?.accounts?.id) {
+        alert("Google Sign-In library is still loading. Please try again in a moment.");
+        return;
+      }
+      window.google.accounts.id.initialize({
+        client_id: cid,
+        callback: (resp) => {
+          const payload = decodeJwtPayload(resp.credential);
+          if (!payload || !payload.email) return;
+          const user = { email: payload.email, email_verified: !!payload.email_verified, name: payload.name || payload.email };
+          sessionStorage.setItem("opcodeshield_auth_user", JSON.stringify(user));
+          applyAuthState(user);
+        },
+      });
+      window.google.accounts.id.prompt();
+      const slot = $("g-signin-slot");
+      if (slot) {
+        slot.innerHTML = "";
+        window.google.accounts.id.renderButton(slot, { theme: "filled_black", size: "small", shape: "pill" });
+      }
+    });
+  }
+}
+
 window.addEventListener("DOMContentLoaded", async () => {
   setupUI();
+  initGoogleAuth();
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./sw.js").catch(() => {});
   }

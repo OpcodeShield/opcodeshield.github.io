@@ -35,6 +35,7 @@
   </script>
 
   <link rel="stylesheet" href="./styles.css" />
+  <script async defer src="https://accounts.google.com/gsi/client"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js"></script>
   <script defer src="./app.js"></script>
 </head>
@@ -50,6 +51,12 @@
         <a href="#downloads" class="hide-sm">Downloads</a>
         <a href="https://github.com/FlaxyDitto-dev/OpcodeShield" target="_blank" rel="noopener">GitHub</a>
         <button id="btn-install-pwa" class="btn secondary" style="display:none;padding:5px 10px;font-size:0.78rem">Install PWA</button>
+        <div id="auth-controls" style="display:inline-flex;align-items:center;gap:6px">
+          <div id="g-signin-slot"></div>
+          <button id="btn-google-login" class="btn secondary" style="padding:5px 10px;font-size:0.78rem" title="Optional Google Sign-In for roles">Sign in</button>
+          <span id="auth-user-pill" class="status-chip" style="display:none;padding:4px 9px"></span>
+          <button id="btn-google-logout" class="btn secondary" style="display:none;padding:5px 9px;font-size:0.76rem">Sign out</button>
+        </div>
         <a class="btn" href="https://github.com/FlaxyDitto-dev/OpcodeShield/releases/latest" target="_blank" rel="noopener" style="padding:6px 12px;font-size:0.8rem">v4.1.0</a>
       </nav>
     </div>
@@ -76,6 +83,7 @@
         <button class="tab-btn" data-tab="tab-cfg" role="tab">3. Call-Graph / CFG</button>
         <button class="tab-btn" data-tab="tab-patcher" role="tab">4. Surgical Patcher</button>
         <button class="tab-btn" data-tab="tab-auditor" role="tab">5. AI Code Auditor</button>
+        <button id="tab-btn-owner-traffic" class="tab-btn" data-tab="tab-owner-traffic" role="tab" style="display:none;border-color:rgba(245,158,11,0.55);color:#fbbf24">★ Owner Traffic</button>
       </div>
 
       <!-- TAB 1 -->
@@ -197,6 +205,44 @@ WriteProcessMemory(hProc, mem, shellcode, 256, NULL);
 CreateRemoteThread(hProc, NULL, 0, mem, NULL, 0, NULL);</textarea>
           <div style="margin-top:10px"><button id="btn-audit-code" class="btn">Audit with SecNet-v3</button></div>
           <pre id="code-audit-out" class="hex-diff" style="margin-top:10px">Click "Audit with SecNet-v3" to run local multi-label neural inference.</pre>
+        </div>
+      </div>
+
+      <!-- TAB 6: OWNER-ONLY TRAFFIC DASHBOARD (visible ONLY to role === 'owner') -->
+      <div id="tab-owner-traffic" class="tab-panel">
+        <div class="card" style="border-color:rgba(245,158,11,0.45)">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+            <div>
+              <h3 style="margin:0;color:#fbbf24">★ Owner Traffic &amp; Release Analytics</h3>
+              <div id="owner-identity" style="font-size:0.8rem;color:var(--muted)">Authenticated as Owner</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button id="btn-refresh-traffic" class="btn secondary">Refresh Live Stats</button>
+              <a class="btn secondary" href="https://search.google.com/search-console/performance/search-analytics?resource_id=https%3A%2F%2Fopcodeshield.github.io%2F" target="_blank" rel="noopener">Google Search Traffic</a>
+              <a class="btn secondary" href="https://github.com/FlaxyDitto-dev/OpcodeShield/graphs/traffic" target="_blank" rel="noopener">GitHub Traffic Graph</a>
+            </div>
+          </div>
+
+          <div class="grid-3" style="margin-bottom:12px">
+            <div class="metric-box">
+              <div class="metric-label">Total Release Downloads</div>
+              <div id="stat-total-downloads" class="metric-val">—</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-label">GitHub Stars / Forks</div>
+              <div id="stat-stars-forks" class="metric-val">—</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-label">Latest Release Downloads</div>
+              <div id="stat-latest-downloads" class="metric-val">—</div>
+            </div>
+          </div>
+
+          <h4 style="margin:12px 0 6px;font-size:0.86rem">Downloads by Platform Asset (All Releases)</h4>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Release</th><th>Asset</th><th>Downloads</th><th>Size</th></tr></thead>
+            <tbody id="owner-downloads-table"><tr><td colspan="4" style="color:var(--muted)">Loading live GitHub release stats...</td></tr></tbody>
+          </table></div>
         </div>
       </div>
     </section>
