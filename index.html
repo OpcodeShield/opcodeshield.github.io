@@ -76,16 +76,16 @@
 
     <section id="app">
       <div class="tabs" role="tablist" aria-label="OpcodeShield Tools">
-        <button class="tab-btn active" data-tab="tab-scanner" role="tab" aria-selected="true">1. Scanner &amp; AI</button>
-        <button class="tab-btn" data-tab="tab-details" role="tab" aria-selected="false">2. Sections &amp; YARA</button>
-        <button class="tab-btn" data-tab="tab-cfg" role="tab" aria-selected="false">3. Call-Graph / CFG</button>
-        <button class="tab-btn" data-tab="tab-patcher" role="tab" aria-selected="false">4. Surgical Patcher</button>
-        <button class="tab-btn" data-tab="tab-auditor" role="tab" aria-selected="false">5. AI Code Auditor</button>
-        <button id="tab-btn-owner-traffic" class="tab-btn" data-tab="tab-owner-traffic" role="tab" aria-selected="false" style="display:none;border-color:rgba(245,158,11,0.55);color:#fbbf24">★ Owner Traffic</button>
+        <button id="tbtn-scanner" class="tab-btn active" data-tab="tab-scanner" role="tab" aria-selected="true" aria-controls="tab-scanner">1. Scanner &amp; AI</button>
+        <button id="tbtn-details" class="tab-btn" data-tab="tab-details" role="tab" aria-selected="false" aria-controls="tab-details">2. Sections &amp; YARA</button>
+        <button id="tbtn-cfg" class="tab-btn" data-tab="tab-cfg" role="tab" aria-selected="false" aria-controls="tab-cfg">3. Call-Graph / CFG</button>
+        <button id="tbtn-patcher" class="tab-btn" data-tab="tab-patcher" role="tab" aria-selected="false" aria-controls="tab-patcher">4. Surgical Patcher</button>
+        <button id="tbtn-auditor" class="tab-btn" data-tab="tab-auditor" role="tab" aria-selected="false" aria-controls="tab-auditor">5. AI Code Auditor</button>
+        <button id="tab-btn-owner-traffic" class="tab-btn" data-tab="tab-owner-traffic" role="tab" aria-selected="false" aria-controls="tab-owner-traffic" style="display:none;border-color:rgba(245,158,11,0.55);color:#fbbf24">★ Owner Traffic</button>
       </div>
 
       <!-- TAB 1 -->
-      <div id="tab-scanner" class="tab-panel active">
+      <div id="tab-scanner" class="tab-panel active" role="tabpanel" aria-labelledby="tbtn-scanner">
         <div class="card">
           <div id="dropzone" class="dropzone">
             <input id="file-input" type="file" aria-label="Choose a binary or source code file to inspect" />
