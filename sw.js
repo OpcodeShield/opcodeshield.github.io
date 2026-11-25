@@ -1,14 +1,12 @@
 // OpcodeShield v4.0.0 Offline PWA Service Worker
-const CACHE_NAME = "opcodeshield-wasm-v4.1.2";
+const CACHE_NAME = "opcodeshield-wasm-v4.1.3";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
   "./manifest.json",
-  "./wasm/opcodeshield_core.wasm",
-  "./models/OpcodeShield-SecNet-v3-int8.onnx",
-  "./models/OpcodeShield-SecNet-v3-vocab.json"
+  "./wasm/opcodeshield_core.wasm"
 ];
 
 self.addEventListener("install", (event) => {

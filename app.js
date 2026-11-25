@@ -78,14 +78,29 @@ async function initRustWasm() {
   }
 }
 
+function loadScriptOnce(src) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) return resolve();
+    const s = document.createElement("script");
+    s.src = src;
+    s.async = true;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error(`Failed to load ${src}`));
+    document.head.appendChild(s);
+  });
+}
+
 async function ensureOnnxAiLoaded() {
   if (state.ortSession && state.vocab) return true;
-  if (typeof ort === "undefined") {
-    setChip("ai-dot", "ai-status", "err", "ONNX Runtime Web unavailable");
-    return false;
-  }
   try {
-    setChip("ai-dot", "ai-status", "loading", "Loading SecNet-v3 (INT8 ONNX)...");
+    setChip("ai-dot", "ai-status", "loading", "Loading SecNet-v3 (13.5 MB ONNX)...");
+    if (typeof ort === "undefined") {
+      await loadScriptOnce("https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js");
+    }
+    if (typeof ort === "undefined") {
+      setChip("ai-dot", "ai-status", "err", "ONNX Runtime Web unavailable");
+      return false;
+    }
     ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/";
     ort.env.wasm.numThreads = 1;
 
@@ -377,9 +392,10 @@ function buildDemoSample(kind) {
 function setupUI() {
   document.querySelectorAll(".tab-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
-      document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+      document.querySelectorAll(".tab-btn").forEach((b) => { b.classList.remove("active"); b.setAttribute("aria-selected", "false"); });
       document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
       btn.classList.add("active");
+      btn.setAttribute("aria-selected", "true");
       $(btn.dataset.tab).classList.add("active");
     });
   });
@@ -586,7 +602,7 @@ function initGoogleAuth() {
 
   const loginBtn = $("btn-google-login");
   if (loginBtn) {
-    loginBtn.addEventListener("click", () => {
+    loginBtn.addEventListener("click", async () => {
       let cid = GOOGLE_OAUTH_CLIENT_ID || localStorage.getItem("opcodeshield_google_client_id") || "";
       if (!cid) {
         cid = prompt(
@@ -597,8 +613,15 @@ function initGoogleAuth() {
         localStorage.setItem("opcodeshield_google_client_id", cid);
       }
       if (!window.google?.accounts?.id) {
-        alert("Google Sign-In library is still loading. Please try again in a moment.");
-        return;
+        loginBtn.textContent = "Loading...";
+        try {
+          await loadScriptOnce("https://accounts.google.com/gsi/client");
+        } catch (_) {
+          loginBtn.textContent = "Sign in";
+          alert("Could not load Google Sign-In.");
+          return;
+        }
+        loginBtn.textContent = "Sign in";
       }
       window.google.accounts.id.initialize({
         client_id: cid,
@@ -627,5 +650,5 @@ window.addEventListener("DOMContentLoaded", async () => {
     navigator.serviceWorker.register("./sw.js").catch(() => {});
   }
   await initRustWasm();
-  ensureOnnxAiLoaded();
+  setChip("ai-dot", "ai-status", "ok", "SecNet-v3 AI: Ready (On-Demand)");
 });

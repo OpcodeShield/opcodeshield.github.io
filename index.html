@@ -35,8 +35,6 @@
   </script>
 
   <link rel="stylesheet" href="./styles.css" />
-  <script async defer src="https://accounts.google.com/gsi/client"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js"></script>
   <script defer src="./app.js"></script>
 </head>
 <body>
@@ -77,20 +75,20 @@
     </section>
 
     <section id="app">
-      <div class="tabs" role="tablist">
-        <button class="tab-btn active" data-tab="tab-scanner" role="tab">1. Scanner &amp; AI</button>
-        <button class="tab-btn" data-tab="tab-details" role="tab">2. Sections &amp; YARA</button>
-        <button class="tab-btn" data-tab="tab-cfg" role="tab">3. Call-Graph / CFG</button>
-        <button class="tab-btn" data-tab="tab-patcher" role="tab">4. Surgical Patcher</button>
-        <button class="tab-btn" data-tab="tab-auditor" role="tab">5. AI Code Auditor</button>
-        <button id="tab-btn-owner-traffic" class="tab-btn" data-tab="tab-owner-traffic" role="tab" style="display:none;border-color:rgba(245,158,11,0.55);color:#fbbf24">★ Owner Traffic</button>
+      <div class="tabs" role="tablist" aria-label="OpcodeShield Tools">
+        <button class="tab-btn active" data-tab="tab-scanner" role="tab" aria-selected="true">1. Scanner &amp; AI</button>
+        <button class="tab-btn" data-tab="tab-details" role="tab" aria-selected="false">2. Sections &amp; YARA</button>
+        <button class="tab-btn" data-tab="tab-cfg" role="tab" aria-selected="false">3. Call-Graph / CFG</button>
+        <button class="tab-btn" data-tab="tab-patcher" role="tab" aria-selected="false">4. Surgical Patcher</button>
+        <button class="tab-btn" data-tab="tab-auditor" role="tab" aria-selected="false">5. AI Code Auditor</button>
+        <button id="tab-btn-owner-traffic" class="tab-btn" data-tab="tab-owner-traffic" role="tab" aria-selected="false" style="display:none;border-color:rgba(245,158,11,0.55);color:#fbbf24">★ Owner Traffic</button>
       </div>
 
       <!-- TAB 1 -->
       <div id="tab-scanner" class="tab-panel active">
         <div class="card">
           <div id="dropzone" class="dropzone">
-            <input id="file-input" type="file" />
+            <input id="file-input" type="file" aria-label="Choose a binary or source code file to inspect" />
             <h2 style="margin-bottom:4px">Drop ANY file: .exe (incl. PyInstaller), .dll, .elf, .apk, .py, .rs, .js, .ps1, .sh</h2>
             <p style="color:var(--muted);margin:0;font-size:0.86rem">Finds RATs, stealers &amp; backdoors in binaries, PyInstaller archives, and source code — 100% local in WebAssembly.</p>
             <div class="btn-row">
@@ -198,7 +196,7 @@
       <div id="tab-auditor" class="tab-panel">
         <div class="card">
           <h3>OpcodeShield-SecNet-v3 Pseudo-C &amp; Disassembly Auditor</h3>
-          <textarea id="code-input" rows="6">FUNC inject_remote_thread
+          <textarea id="code-input" rows="6" aria-label="Paste Pseudo-C or disassembly code to audit">FUNC inject_remote_thread
 HHOOK h = SetWindowsHookExA(13, hook_proc, NULL, 0);
 LPVOID mem = VirtualAllocEx(hProc, NULL, 4096, 0x3000, 0x40);
 WriteProcessMemory(hProc, mem, shellcode, 256, NULL);
